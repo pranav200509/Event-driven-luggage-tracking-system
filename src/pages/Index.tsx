@@ -3,7 +3,7 @@ import { lookupPNR, type PNRRecord } from "@/data/pnrDatabase";
 import PNRSearch from "@/components/PNRSearch";
 import PNRResult from "@/components/PNRResult";
 import PNRTable from "@/components/PNRTable";
-import { Plane, Database, Search, Luggage } from "lucide-react";
+import { Plane, Database, Search } from "lucide-react";
 
 const Index = () => {
   const [result, setResult] = useState<PNRRecord | null | undefined>(undefined);
@@ -14,9 +14,9 @@ const Index = () => {
     setSearchedPnr(pnr);
   };
 
-  const handleTableSelect = (pnr: string) => {
-    const record = lookupPNR(pnr);
-    setResult(record || null);
+  const handleTableSelect = async (pnr: string) => {
+    const record = await lookupPNR(pnr);
+    setResult(record);
     setSearchedPnr(pnr);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -53,7 +53,7 @@ const Index = () => {
                 <Search className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                 <h3 className="text-xl font-heading font-semibold mb-2">No Record Found</h3>
                 <p className="text-muted-foreground">
-                  PNR <span className="font-heading font-semibold text-primary">{searchedPnr}</span> does not exist in the demo database.
+                  PNR <span className="font-heading font-semibold text-primary">{searchedPnr}</span> does not exist in the database.
                 </p>
               </div>
             )}
@@ -63,12 +63,11 @@ const Index = () => {
 
       {/* Stats */}
       <section className="py-12 px-4 bg-sky-50">
-        <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div className="max-w-4xl mx-auto grid grid-cols-3 gap-6">
           {[
             { icon: Database, label: "PNR Records", value: "12" },
-            { icon: Plane, label: "Airlines", value: "4" },
-            { icon: Luggage, label: "Bags Tracked", value: "21" },
-            { icon: Search, label: "Airports", value: "10" },
+            { icon: Plane, label: "Airports", value: "5" },
+            { icon: Search, label: "PNR Lookup", value: "Live" },
           ].map((stat) => (
             <div key={stat.label} className="text-center">
               <stat.icon className="h-6 w-6 text-primary mx-auto mb-2" />
@@ -83,7 +82,7 @@ const Index = () => {
       <section className="py-12 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold font-heading mb-2">Demo PNR Database</h2>
+            <h2 className="text-2xl font-bold font-heading mb-2">PNR Database</h2>
             <p className="text-muted-foreground">Click any row to view full details</p>
           </div>
           <PNRTable onSelect={handleTableSelect} />
@@ -93,7 +92,7 @@ const Index = () => {
       {/* Footer */}
       <footer className="py-6 px-4 border-t border-sky-100 text-center">
         <p className="text-sm text-muted-foreground font-heading">
-          SkyTrack — College Project Demo • Indian Routes & Passengers
+          SkyTrack — Smart Luggage Tracking for Indian Airlines
         </p>
       </footer>
     </div>

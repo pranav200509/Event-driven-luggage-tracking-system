@@ -8,9 +8,6 @@ import {
   Mail,
   Calendar,
   Clock,
-  MapPin,
-  Luggage,
-  Tag,
   Armchair,
 } from "lucide-react";
 
@@ -23,7 +20,7 @@ const DetailRow = ({ icon: Icon, label, value }: { icon: any; label: string; val
 );
 
 const PNRResult = ({ record }: { record: PNRRecord }) => {
-  const isCheckedIn = record.checkInStatus === "Checked-in";
+  const isCheckedIn = record.checkin_status === "checked_in";
 
   return (
     <div className="w-full max-w-3xl mx-auto space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -31,13 +28,13 @@ const PNRResult = ({ record }: { record: PNRRecord }) => {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <p className="text-sm text-muted-foreground font-heading">PNR</p>
-          <h3 className="text-2xl font-bold font-heading tracking-wide text-primary">{record.pnr}</h3>
+          <h3 className="text-2xl font-bold font-heading tracking-wide text-primary">{record.pnr_code}</h3>
         </div>
         <Badge
           variant={isCheckedIn ? "default" : "secondary"}
           className={isCheckedIn ? "bg-success text-success-foreground" : "bg-warning text-warning-foreground"}
         >
-          {record.checkInStatus}
+          {isCheckedIn ? "Checked-in" : "Not Checked-in"}
         </Badge>
       </div>
 
@@ -46,8 +43,8 @@ const PNRResult = ({ record }: { record: PNRRecord }) => {
         <CardContent className="p-6">
           <div className="flex items-center justify-between gap-4">
             <div className="text-center">
-              <p className="text-2xl font-bold font-heading">{record.sourceAirport}</p>
-              <p className="text-sm text-muted-foreground">{record.sourceCity}</p>
+              <p className="text-2xl font-bold font-heading">{record.source_airport}</p>
+              <p className="text-sm text-muted-foreground">{record.source_city}</p>
             </div>
             <div className="flex-1 flex items-center gap-2">
               <div className="h-px flex-1 bg-sky-200" />
@@ -55,12 +52,12 @@ const PNRResult = ({ record }: { record: PNRRecord }) => {
               <div className="h-px flex-1 bg-sky-200" />
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold font-heading">{record.destinationAirport}</p>
-              <p className="text-sm text-muted-foreground">{record.destinationCity}</p>
+              <p className="text-2xl font-bold font-heading">{record.destination_airport}</p>
+              <p className="text-sm text-muted-foreground">{record.destination_city}</p>
             </div>
           </div>
           <div className="flex items-center justify-center gap-4 mt-3">
-            <span className="text-sm text-muted-foreground">{record.flightNo} • {record.airline}</span>
+            <span className="text-sm text-muted-foreground">{record.flight_number}</span>
           </div>
         </CardContent>
       </Card>
@@ -70,9 +67,8 @@ const PNRResult = ({ record }: { record: PNRRecord }) => {
         <Card>
           <CardContent className="p-5">
             <h4 className="font-heading font-semibold mb-3 text-sky-700">Passenger Info</h4>
-            <DetailRow icon={User} label="Name" value={record.passengerName} />
-            <DetailRow icon={User} label="Gender / Age" value={`${record.gender}, ${record.age} yrs`} />
-            <DetailRow icon={Phone} label="Mobile" value={record.mobile} />
+            <DetailRow icon={User} label="Name" value={record.passenger_name} />
+            <DetailRow icon={Phone} label="Mobile" value={record.mobile_number} />
             <DetailRow icon={Mail} label="Email" value={record.email} />
           </CardContent>
         </Card>
@@ -80,25 +76,9 @@ const PNRResult = ({ record }: { record: PNRRecord }) => {
         <Card>
           <CardContent className="p-5">
             <h4 className="font-heading font-semibold mb-3 text-sky-700">Flight Details</h4>
-            <DetailRow icon={Calendar} label="Date" value={record.journeyDate} />
-            <DetailRow icon={Clock} label="Departure" value={record.departureTime} />
-            <DetailRow icon={Clock} label="Arrival" value={record.arrivalTime} />
-            <DetailRow icon={Armchair} label="Seat / Class" value={`${record.seatNo} (${record.classType})`} />
-          </CardContent>
-        </Card>
-
-        <Card className="md:col-span-2">
-          <CardContent className="p-5">
-            <h4 className="font-heading font-semibold mb-3 text-sky-700">Baggage Info</h4>
-            <div className="grid sm:grid-cols-3 gap-2">
-              <DetailRow icon={Luggage} label="No. of Bags" value={String(record.numBags)} />
-              <DetailRow
-                icon={Tag}
-                label="Baggage Tag"
-                value={record.baggageTagId || "Not Assigned"}
-              />
-              <DetailRow icon={MapPin} label="Route" value={`${record.sourceAirport} → ${record.destinationAirport}`} />
-            </div>
+            <DetailRow icon={Calendar} label="Date" value={record.journey_date} />
+            <DetailRow icon={Clock} label="Time" value={record.journey_time} />
+            <DetailRow icon={Armchair} label="Seat" value={record.seat_assignment || "Not Assigned"} />
           </CardContent>
         </Card>
       </div>
