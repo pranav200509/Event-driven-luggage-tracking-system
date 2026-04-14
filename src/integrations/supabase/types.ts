@@ -14,7 +14,90 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      airports: {
+        Row: {
+          city: string
+          code: string
+          name: string
+        }
+        Insert: {
+          city: string
+          code: string
+          name: string
+        }
+        Update: {
+          city?: string
+          code?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      pnr_records: {
+        Row: {
+          checkin_status: Database["public"]["Enums"]["checkin_status"]
+          created_at: string
+          destination_airport: string
+          email: string
+          flight_number: string
+          id: string
+          journey_date: string
+          journey_time: string
+          mobile_number: string
+          passenger_name: string
+          pnr_code: string
+          seat_assignment: string | null
+          source_airport: string
+          updated_at: string
+        }
+        Insert: {
+          checkin_status?: Database["public"]["Enums"]["checkin_status"]
+          created_at?: string
+          destination_airport: string
+          email: string
+          flight_number: string
+          id?: string
+          journey_date: string
+          journey_time: string
+          mobile_number: string
+          passenger_name: string
+          pnr_code: string
+          seat_assignment?: string | null
+          source_airport: string
+          updated_at?: string
+        }
+        Update: {
+          checkin_status?: Database["public"]["Enums"]["checkin_status"]
+          created_at?: string
+          destination_airport?: string
+          email?: string
+          flight_number?: string
+          id?: string
+          journey_date?: string
+          journey_time?: string
+          mobile_number?: string
+          passenger_name?: string
+          pnr_code?: string
+          seat_assignment?: string | null
+          source_airport?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pnr_records_destination_airport_fkey"
+            columns: ["destination_airport"]
+            isOneToOne: false
+            referencedRelation: "airports"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "pnr_records_source_airport_fkey"
+            columns: ["source_airport"]
+            isOneToOne: false
+            referencedRelation: "airports"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +106,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      checkin_status: "not_checked_in" | "checked_in"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +233,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      checkin_status: ["not_checked_in", "checked_in"],
+    },
   },
 } as const
