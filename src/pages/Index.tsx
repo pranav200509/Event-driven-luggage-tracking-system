@@ -1,98 +1,100 @@
-import { useState } from "react";
-import { lookupPNR, type PNRRecord } from "@/data/pnrDatabase";
-import PNRSearch from "@/components/PNRSearch";
-import PNRResult from "@/components/PNRResult";
-import PNRTable from "@/components/PNRTable";
-import { Plane, Database, Search } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Plane, Search, Shield, Luggage, MapPin, ShieldCheck } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 
 const Index = () => {
-  const [result, setResult] = useState<PNRRecord | null | undefined>(undefined);
-  const [searchedPnr, setSearchedPnr] = useState("");
-
-  const handleResult = (record: PNRRecord | null, pnr: string) => {
-    setResult(record);
-    setSearchedPnr(pnr);
-  };
-
-  const handleTableSelect = async (pnr: string) => {
-    const record = await lookupPNR(pnr);
-    setResult(record);
-    setSearchedPnr(pnr);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-sky-900 via-sky-700 to-primary py-20 px-4">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djItSDJ2LTJoMzR6bTAtMzBWMkgydjJoMzR6TTIgMzR2MmgzNHYtMkgyeiIvPjwvZz48L2c+PC9zdmc+')] opacity-30" />
-        <div className="max-w-4xl mx-auto text-center relative z-10">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="p-3 rounded-2xl bg-accent/20 backdrop-blur-sm">
-              <Plane className="h-8 w-8 text-sky-100" />
+      <section className="relative flex-1 flex items-center justify-center bg-gradient-to-b from-sky-100 via-sky-50 to-background py-24 px-4">
+        <div className="max-w-2xl mx-auto text-center relative z-10">
+          <div className="flex items-center justify-center mb-6">
+            <div className="p-4 rounded-full bg-primary text-primary-foreground shadow-lg">
+              <Plane className="h-8 w-8" />
             </div>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold font-heading text-sky-50 mb-3 tracking-tight">
-            SKY TRACK
+          <h1 className="text-4xl md:text-5xl font-bold font-heading tracking-tight mb-4">
+            <span className="text-primary">Sky</span>Track
           </h1>
-          <p className="text-sky-200 text-lg mb-10 max-w-md mx-auto">
-            Smart Flight Passenger & Luggage Tracking
+          <p className="text-muted-foreground text-lg mb-10 max-w-lg mx-auto leading-relaxed">
+            Smart Flight Passenger Luggage Tracking System for Indian Airlines. Track your baggage in real-time from check-in to arrival.
           </p>
-          <PNRSearch onResult={handleResult} />
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Button
+              variant="outline"
+              size="lg"
+              className="h-12 px-8 font-heading gap-2"
+              onClick={() => navigate("/track")}
+            >
+              <Search className="h-4 w-4" />
+              Track Baggage
+            </Button>
+            <Button
+              size="lg"
+              className="h-12 px-8 font-heading gap-2 bg-primary hover:bg-primary/90"
+              onClick={() => navigate("/staff-login")}
+            >
+              <Shield className="h-4 w-4" />
+              Staff Login
+            </Button>
+          </div>
         </div>
       </section>
 
-      {/* Result / Error Section */}
-      {result !== undefined && (
-        <section className="py-12 px-4">
-          <div className="max-w-4xl mx-auto">
-            {result ? (
-              <PNRResult record={result} />
-            ) : (
-              <div className="text-center py-12 animate-in fade-in duration-300">
-                <Search className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-xl font-heading font-semibold mb-2">No Record Found</h3>
-                <p className="text-muted-foreground">
-                  PNR <span className="font-heading font-semibold text-primary">{searchedPnr}</span> does not exist in the database.
+      {/* Future Features Section */}
+      <section className="py-16 px-4 bg-background">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-2xl font-bold font-heading text-center mb-10">Future Features</h2>
+          <div className="grid md:grid-cols-3 gap-6">
+            <Card className="text-center border-sky-100">
+              <CardContent className="p-8">
+                <div className="flex justify-center mb-4">
+                  <Luggage className="h-8 w-8 text-primary" />
+                </div>
+                <h3 className="font-heading font-semibold text-lg mb-2">Baggage Tracking</h3>
+                <p className="text-sm text-muted-foreground">
+                  Real-time tracking of your checked baggage from check-in counter to arrival carousel.
                 </p>
-              </div>
-            )}
-          </div>
-        </section>
-      )}
+              </CardContent>
+            </Card>
 
-      {/* Stats */}
-      <section className="py-12 px-4 bg-sky-50">
-        <div className="max-w-4xl mx-auto grid grid-cols-3 gap-6">
-          {[
-            { icon: Database, label: "PNR Records", value: "12" },
-            { icon: Plane, label: "Airports", value: "5" },
-            { icon: Search, label: "PNR Lookup", value: "Live" },
-          ].map((stat) => (
-            <div key={stat.label} className="text-center">
-              <stat.icon className="h-6 w-6 text-primary mx-auto mb-2" />
-              <p className="text-2xl font-bold font-heading">{stat.value}</p>
-              <p className="text-sm text-muted-foreground">{stat.label}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+            <Card className="text-center border-sky-100">
+              <CardContent className="p-8">
+                <div className="flex justify-center mb-4">
+                  <MapPin className="h-8 w-8 text-primary" />
+                </div>
+                <h3 className="font-heading font-semibold text-lg mb-2">Location Updates</h3>
+                <p className="text-sm text-muted-foreground">
+                  Get SMS and app notifications at every checkpoint in your baggage journey.
+                </p>
+              </CardContent>
+            </Card>
 
-      {/* Database Table */}
-      <section className="py-12 px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold font-heading mb-2">PNR Database</h2>
-            <p className="text-muted-foreground">Click any row to view full details</p>
+            <Card className="text-center border-sky-100">
+              <CardContent className="p-8">
+                <div className="flex justify-center mb-4">
+                  <ShieldCheck className="h-8 w-8 text-primary" />
+                </div>
+                <h3 className="font-heading font-semibold text-lg mb-2">Secure & Reliable</h3>
+                <p className="text-sm text-muted-foreground">
+                  Built for Indian airports with secure PNR verification and data protection.
+                </p>
+              </CardContent>
+            </Card>
           </div>
-          <PNRTable onSelect={handleTableSelect} />
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="py-6 px-4 border-t border-sky-100 text-center">
-        <p className="text-sm text-muted-foreground font-heading">
-          SkyTrack — Smart Luggage Tracking for Indian Airlines
+      <footer className="py-6 px-4 border-t text-center">
+        <p className="text-sm text-muted-foreground">
+          © 2025 SkyTrack — Smart Luggage Tracking for Indian Airlines
+        </p>
+        <p className="text-xs text-muted-foreground mt-1">
+          A prototype demonstration for college project.
         </p>
       </footer>
     </div>
