@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Plane, Eye, EyeOff, ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,14 +7,23 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth, getRolePath } from "@/hooks/useAuth";
 
 const StaffLogin = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { session, role, loading: authLoading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Auto redirect if already logged in
+  useEffect(() => {
+    if (!authLoading && session && role) {
+      navigate(getRolePath(role), { replace: true });
+    }
+  }, [authLoading, session, role, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,14 +33,27 @@ const StaffLogin = () => {
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
-        toast({ title: "Login Failed", description: error.message, variant: "destructive" });
-      } else {
-        navigate("/admin");
+        toast({
+          title: "Login Failed",
+          description: error.message === "Invalid login credentials"
+            ? "Invalid email or password. Please try again."
+            : error.message,
+          variant: "destructive",
+        });
       }
+      // Redirect is handled by useAuth effect above
     } finally {
       setLoading(false);
     }
   };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-sky-50 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-sky-50 flex flex-col items-center justify-center p-4">
@@ -62,7 +84,7 @@ const StaffLogin = () => {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="admin@skytrack.com"
+                  placeholder="staff@skytrack.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="h-11"
