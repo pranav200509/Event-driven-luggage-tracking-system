@@ -9,6 +9,7 @@ interface BaggageTagListProps {
   flightNumber: string;
   source: string;
   destination: string;
+  pnrCode?: string;
 }
 
 const BaggageTagList = ({
@@ -17,6 +18,7 @@ const BaggageTagList = ({
   flightNumber,
   source,
   destination,
+  pnrCode,
 }: BaggageTagListProps) => {
   const handlePrint = () => {
     window.print();
@@ -29,17 +31,17 @@ const BaggageTagList = ({
           {bags.length} bag{bags.length > 1 ? "s" : ""} tagged
         </p>
         <Button
-          variant="outline"
+          variant="default"
           size="sm"
-          className="gap-1.5 font-heading"
+          className="gap-1.5 font-heading bg-primary hover:bg-primary/90"
           onClick={handlePrint}
         >
           <Printer className="h-3.5 w-3.5" />
-          Reprint Tags
+          Print All Tags
         </Button>
       </div>
 
-      <div className="grid gap-3 print:grid-cols-1">
+      <div className="grid gap-4 print:grid-cols-1">
         {bags.map((bag) => (
           <BarcodeTag
             key={bag.id}
@@ -50,6 +52,7 @@ const BaggageTagList = ({
             destination={destination}
             bagType={bag.bag_type}
             weight={bag.weight}
+            pnrCode={pnrCode}
           />
         ))}
       </div>
