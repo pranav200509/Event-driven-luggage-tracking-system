@@ -27,6 +27,7 @@ import {
 } from "@/data/baggageDatabase";
 import AddBaggageForm from "@/components/AddBaggageForm";
 import BaggageTagList from "@/components/BaggageTagList";
+import BaggageListView from "@/components/BaggageListView";
 import { toast } from "@/hooks/use-toast";
 
 type Step = 1 | 2 | 3;
@@ -315,26 +316,17 @@ const CheckinPage = () => {
         {record &&
           airportMatch === true &&
           record.checkin_status === "checked_in" && (
-            <Card className="border-green-200 bg-green-50/50 mb-6">
+            <Card className="border-sky-100 mb-6">
               <CardContent className="p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <CheckCircle className="h-5 w-5 text-green-600" />
-                  <h3 className="font-heading font-semibold text-green-800">
-                    Already Checked In
-                  </h3>
-                </div>
                 {bags.length > 0 ? (
-                  <BaggageTagList
-                    bags={bags}
-                    passengerName={record.passenger_name}
-                    flightNumber={record.flight_number}
-                    source={record.source_airport}
-                    destination={record.destination_airport}
-                  />
+                  <BaggageListView bags={bags} />
                 ) : (
-                  <p className="text-sm text-green-700">
-                    This passenger has already been checked in.
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="h-5 w-5 text-green-600" />
+                    <p className="text-sm text-muted-foreground">
+                      This passenger has already been checked in.
+                    </p>
+                  </div>
                 )}
               </CardContent>
             </Card>
@@ -377,6 +369,7 @@ const CheckinPage = () => {
                   flightNumber={record.flight_number}
                   source={record.source_airport}
                   destination={record.destination_airport}
+                  pnrCode={record.pnr_code}
                 />
               </CardContent>
             </Card>
