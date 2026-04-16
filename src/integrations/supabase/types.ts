@@ -32,6 +32,57 @@ export type Database = {
         }
         Relationships: []
       }
+      baggage_records: {
+        Row: {
+          bag_type: Database["public"]["Enums"]["bag_type"]
+          created_at: string
+          current_location: string
+          id: string
+          pnr_code: string
+          status: Database["public"]["Enums"]["baggage_status"]
+          tag_number: string
+          updated_at: string
+          weight: number
+        }
+        Insert: {
+          bag_type?: Database["public"]["Enums"]["bag_type"]
+          created_at?: string
+          current_location: string
+          id?: string
+          pnr_code: string
+          status?: Database["public"]["Enums"]["baggage_status"]
+          tag_number: string
+          updated_at?: string
+          weight: number
+        }
+        Update: {
+          bag_type?: Database["public"]["Enums"]["bag_type"]
+          created_at?: string
+          current_location?: string
+          id?: string
+          pnr_code?: string
+          status?: Database["public"]["Enums"]["baggage_status"]
+          tag_number?: string
+          updated_at?: string
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "baggage_records_current_location_fkey"
+            columns: ["current_location"]
+            isOneToOne: false
+            referencedRelation: "airports"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "baggage_records_pnr_code_fkey"
+            columns: ["pnr_code"]
+            isOneToOne: false
+            referencedRelation: "pnr_records"
+            referencedColumns: ["pnr_code"]
+          },
+        ]
+      }
       pnr_records: {
         Row: {
           checkin_status: Database["public"]["Enums"]["checkin_status"]
@@ -173,9 +224,17 @@ export type Database = {
         }
         Returns: boolean
       }
+      next_bag_tag: { Args: never; Returns: string }
     }
     Enums: {
       app_role: "admin" | "checkin_staff" | "baggage_staff"
+      bag_type: "cabin" | "oversized" | "fragile" | "normal"
+      baggage_status:
+        | "checked_in"
+        | "in_transit"
+        | "arrived"
+        | "collected"
+        | "lost"
       checkin_status: "not_checked_in" | "checked_in"
     }
     CompositeTypes: {
@@ -305,6 +364,14 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "checkin_staff", "baggage_staff"],
+      bag_type: ["cabin", "oversized", "fragile", "normal"],
+      baggage_status: [
+        "checked_in",
+        "in_transit",
+        "arrived",
+        "collected",
+        "lost",
+      ],
       checkin_status: ["not_checked_in", "checked_in"],
     },
   },

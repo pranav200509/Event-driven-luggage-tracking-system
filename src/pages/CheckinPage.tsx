@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import StaffHeader from "@/components/StaffHeader";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
@@ -19,6 +19,14 @@ import {
   CheckCircle,
 } from "lucide-react";
 import { lookupPNR, type PNRRecord } from "@/data/pnrDatabase";
+import {
+  createBaggageForPNR,
+  getBaggageByPNR,
+  type BagInput,
+  type BaggageRecord,
+} from "@/data/baggageDatabase";
+import AddBaggageForm from "@/components/AddBaggageForm";
+import BaggageTagList from "@/components/BaggageTagList";
 import { toast } from "@/hooks/use-toast";
 
 type Step = 1 | 2 | 3;
@@ -32,10 +40,18 @@ const CheckinPage = () => {
   const [record, setRecord] = useState<PNRRecord | null>(null);
   const [searched, setSearched] = useState(false);
   const [currentStep, setCurrentStep] = useState<Step>(1);
+  const [bags, setBags] = useState<BaggageRecord[]>([]);
 
-  const airportMatch = record
-    ? record.source_airport === airportCode
-    : null;
+  const airportMatch = record ? record.source_airport === airportCode : null;
+
+  // Fetch existing bags when record changes
+  useEffect(() => {
+    if (record) {
+      getBaggageByPNR(record.pnr_code).then(setBags);
+    } else {
+      setBags([]);
+    }
+  }, [record]);
 
   const handleVerify = useCallback(async () => {
     const code = pnrInput.trim().toUpperCase();
@@ -50,12 +66,13 @@ const CheckinPage = () => {
       setRecord(result);
       setSearched(true);
       if (result) {
-        // If airport matches and not checked in, auto-advance to step 2
         if (
           result.source_airport === airportCode &&
           result.checkin_status === "not_checked_in"
         ) {
           setCurrentStep(2);
+        } else if (result.checkin_status === "checked_in") {
+          setCurrentStep(3);
         } else {
           setCurrentStep(1);
         }
@@ -70,6 +87,7 @@ const CheckinPage = () => {
     setRecord(null);
     setSearched(false);
     setCurrentStep(1);
+    setBags([]);
   };
 
   const handleRefresh = async () => {
@@ -78,9 +96,39 @@ const CheckinPage = () => {
     try {
       const result = await lookupPNR(record.pnr_code);
       setRecord(result);
+      if (result) {
+        const freshBags = await getBaggageByPNR(result.pnr_code);
+        setBags(freshBags);
+      }
       toast({ title: "Data refreshed" });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleBaggageSubmit = async (bagInputs: BagInput[]) => {
+    if (!record || !airportCode) return;
+    const result = await createBaggageForPNR(
+      record.pnr_code,
+      bagInputs,
+      airportCode
+    );
+    if (result.success) {
+      setBags(result.records);
+      // Re-fetch PNR to get updated checkin_status
+      const updated = await lookupPNR(record.pnr_code);
+      setRecord(updated);
+      setCurrentStep(3);
+      toast({
+        title: "Check-in completed successfully",
+        description: `${result.records.length} baggage tag${result.records.length > 1 ? "s" : ""} generated`,
+      });
+    } else {
+      toast({
+        title: "Error creating baggage",
+        description: result.error,
+        variant: "destructive",
+      });
     }
   };
 
@@ -169,7 +217,7 @@ const CheckinPage = () => {
               </div>
               <Button
                 onClick={handleVerify}
-                className="h-11 px-6 bg-primary hover:bg-sky-600 font-heading"
+                className="h-11 px-6 bg-primary hover:bg-primary/90 font-heading"
                 disabled={loading}
               >
                 {loading ? (
@@ -246,7 +294,10 @@ const CheckinPage = () => {
 
         {/* Airport mismatch warning */}
         {record && airportMatch === false && (
-          <Alert variant="destructive" className="mb-6 border-destructive/30 bg-destructive/5">
+          <Alert
+            variant="destructive"
+            className="mb-6 border-destructive/30 bg-destructive/5"
+          >
             <AlertTriangle className="h-4 w-4" />
             <AlertTitle className="font-heading text-sm">
               Check-in Not Allowed
@@ -260,27 +311,36 @@ const CheckinPage = () => {
           </Alert>
         )}
 
-        {/* Already checked in */}
+        {/* Already checked in — show existing tags */}
         {record &&
           airportMatch === true &&
           record.checkin_status === "checked_in" && (
             <Card className="border-green-200 bg-green-50/50 mb-6">
               <CardContent className="p-6">
-                <div className="flex items-center gap-2 mb-2">
+                <div className="flex items-center gap-2 mb-4">
                   <CheckCircle className="h-5 w-5 text-green-600" />
                   <h3 className="font-heading font-semibold text-green-800">
                     Already Checked In
                   </h3>
                 </div>
-                <p className="text-sm text-green-700">
-                  This passenger has already been checked in. Baggage details
-                  will be shown here once Step 3B (Baggage Tags) is implemented.
-                </p>
+                {bags.length > 0 ? (
+                  <BaggageTagList
+                    bags={bags}
+                    passengerName={record.passenger_name}
+                    flightNumber={record.flight_number}
+                    source={record.source_airport}
+                    destination={record.destination_airport}
+                  />
+                ) : (
+                  <p className="text-sm text-green-700">
+                    This passenger has already been checked in.
+                  </p>
+                )}
               </CardContent>
             </Card>
           )}
 
-        {/* Add Baggage — placeholder for Step 3B */}
+        {/* Add Baggage form — only when not checked in and airport matches */}
         {record &&
           airportMatch === true &&
           record.checkin_status === "not_checked_in" && (
@@ -292,10 +352,32 @@ const CheckinPage = () => {
                     Add Baggage
                   </h2>
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  Baggage registration and tag generation will be implemented in
-                  Step 3B.
-                </p>
+                <AddBaggageForm onSubmit={handleBaggageSubmit} />
+              </CardContent>
+            </Card>
+          )}
+
+        {/* Print Tags step — shown after successful creation */}
+        {currentStep === 3 &&
+          record &&
+          bags.length > 0 &&
+          record.checkin_status === "checked_in" &&
+          airportMatch !== false && (
+            <Card className="border-sky-100 mb-6">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-lg">🏷️</span>
+                  <h2 className="text-lg font-heading font-semibold">
+                    Baggage Tags
+                  </h2>
+                </div>
+                <BaggageTagList
+                  bags={bags}
+                  passengerName={record.passenger_name}
+                  flightNumber={record.flight_number}
+                  source={record.source_airport}
+                  destination={record.destination_airport}
+                />
               </CardContent>
             </Card>
           )}
