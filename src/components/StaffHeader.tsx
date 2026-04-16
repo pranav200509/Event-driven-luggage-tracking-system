@@ -27,7 +27,7 @@ const StaffHeader = () => {
             </div>
           </div>
 
-          {role === "admin" && (
+          {(role === "admin" || role === "checkin_staff") && (
             <nav className="hidden md:flex items-center gap-1 text-sm">
               <Button
                 variant="ghost"
