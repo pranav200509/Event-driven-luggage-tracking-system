@@ -27,6 +27,7 @@ import {
 } from "@/data/baggageDatabase";
 import AddBaggageForm from "@/components/AddBaggageForm";
 import BaggageTagList from "@/components/BaggageTagList";
+import BaggageListView from "@/components/BaggageListView";
 import { toast } from "@/hooks/use-toast";
 
 type Step = 1 | 2 | 3;
