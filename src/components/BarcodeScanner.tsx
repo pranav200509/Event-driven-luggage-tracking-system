@@ -25,14 +25,35 @@ const BarcodeScanner = ({ onDetected, active, onToggle }: BarcodeScannerProps) =
     }
 
     let cancelled = false;
-    const reader = new BrowserMultiFormatReader();
+    const hints = new Map();
+    hints.set(DecodeHintType.TRY_HARDER, true);
+    hints.set(DecodeHintType.POSSIBLE_FORMATS, [
+      BarcodeFormat.CODE_128,
+      BarcodeFormat.CODE_39,
+      BarcodeFormat.EAN_13,
+      BarcodeFormat.EAN_8,
+      BarcodeFormat.UPC_A,
+      BarcodeFormat.ITF,
+      BarcodeFormat.QR_CODE,
+      BarcodeFormat.DATA_MATRIX,
+    ]);
+    const reader = new BrowserMultiFormatReader(hints, { delayBetweenScanAttempts: 120 });
     setStarting(true);
     setError(null);
 
     (async () => {
       try {
+        let deviceId: string | undefined;
+        try {
+          const devices = await BrowserMultiFormatReader.listVideoInputDevices();
+          const rear = devices.find((d) => /back|rear|environment/i.test(d.label));
+          deviceId = (rear ?? devices[devices.length - 1])?.deviceId;
+        } catch {
+          // fallback to default
+        }
+
         const controls = await reader.decodeFromVideoDevice(
-          undefined,
+          deviceId,
           videoRef.current!,
           (result) => {
             if (!result) return;
