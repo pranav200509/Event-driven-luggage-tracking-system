@@ -171,11 +171,13 @@ export async function performScan(args: {
   }
 
   // 4. Update baggage_records
+  // current_location stores airport code (FK to airports.code)
+  // The granular station/location is recorded in the scan log below
   const { data: updated, error: updateErr } = await supabase
     .from("baggage_records")
     .update({
       status: newStatus,
-      current_location: location,
+      current_location: args.staffAirport,
       airport_code: args.staffAirport,
     })
     .eq("tag_number", tag)
@@ -183,7 +185,13 @@ export async function performScan(args: {
     .single();
 
   if (updateErr || !updated) {
-    return { success: false, message: "Failed to update bag", errorCode: "unknown" };
+    return {
+      success: false,
+      message: updateErr?.message
+        ? `Failed to update bag: ${updateErr.message}`
+        : "Failed to update bag",
+      errorCode: "unknown",
+    };
   }
 
   // 5. Insert log
