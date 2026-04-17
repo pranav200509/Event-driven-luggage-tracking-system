@@ -14,8 +14,14 @@ const BarcodeScanner = ({ onDetected, active, onToggle }: BarcodeScannerProps) =
   const videoRef = useRef<HTMLVideoElement>(null);
   const controlsRef = useRef<{ stop: () => void } | null>(null);
   const lastCodeRef = useRef<{ code: string; ts: number }>({ code: "", ts: 0 });
+  const onDetectedRef = useRef(onDetected);
   const [error, setError] = useState<string | null>(null);
   const [starting, setStarting] = useState(false);
+
+  // Keep latest callback without restarting the camera
+  useEffect(() => {
+    onDetectedRef.current = onDetected;
+  }, [onDetected]);
 
   useEffect(() => {
     if (!active) {
@@ -59,15 +65,15 @@ const BarcodeScanner = ({ onDetected, active, onToggle }: BarcodeScannerProps) =
             if (!result) return;
             const code = result.getText().trim().toUpperCase();
             const now = Date.now();
-            // Debounce duplicate fires within 1.5s
+            // Debounce duplicate fires within 2.5s for continuous scanning
             if (
               code === lastCodeRef.current.code &&
-              now - lastCodeRef.current.ts < 1500
+              now - lastCodeRef.current.ts < 2500
             ) {
               return;
             }
             lastCodeRef.current = { code, ts: now };
-            onDetected(code);
+            onDetectedRef.current(code);
           }
         );
         if (cancelled) {
@@ -88,7 +94,7 @@ const BarcodeScanner = ({ onDetected, active, onToggle }: BarcodeScannerProps) =
       controlsRef.current?.stop();
       controlsRef.current = null;
     };
-  }, [active, onDetected]);
+  }, [active]);
 
   return (
     <div className="space-y-3">
