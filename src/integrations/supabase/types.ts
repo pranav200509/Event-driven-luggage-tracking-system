@@ -34,6 +34,7 @@ export type Database = {
       }
       baggage_records: {
         Row: {
+          airport_code: string | null
           bag_type: Database["public"]["Enums"]["bag_type"]
           created_at: string
           current_location: string
@@ -45,6 +46,7 @@ export type Database = {
           weight: number
         }
         Insert: {
+          airport_code?: string | null
           bag_type?: Database["public"]["Enums"]["bag_type"]
           created_at?: string
           current_location: string
@@ -56,6 +58,7 @@ export type Database = {
           weight: number
         }
         Update: {
+          airport_code?: string | null
           bag_type?: Database["public"]["Enums"]["bag_type"]
           created_at?: string
           current_location?: string
@@ -82,6 +85,39 @@ export type Database = {
             referencedColumns: ["pnr_code"]
           },
         ]
+      }
+      baggage_status_logs: {
+        Row: {
+          airport_code: string
+          created_at: string
+          id: string
+          location: string
+          method: string
+          scanned_by: string | null
+          status: Database["public"]["Enums"]["baggage_status"]
+          tag_number: string
+        }
+        Insert: {
+          airport_code: string
+          created_at?: string
+          id?: string
+          location: string
+          method?: string
+          scanned_by?: string | null
+          status: Database["public"]["Enums"]["baggage_status"]
+          tag_number: string
+        }
+        Update: {
+          airport_code?: string
+          created_at?: string
+          id?: string
+          location?: string
+          method?: string
+          scanned_by?: string | null
+          status?: Database["public"]["Enums"]["baggage_status"]
+          tag_number?: string
+        }
+        Relationships: []
       }
       pnr_records: {
         Row: {
@@ -231,7 +267,10 @@ export type Database = {
       bag_type: "cabin" | "oversized" | "fragile" | "normal"
       baggage_status:
         | "checked_in"
+        | "screening"
+        | "sorting"
         | "in_transit"
+        | "loaded"
         | "arrived"
         | "collected"
         | "lost"
@@ -367,7 +406,10 @@ export const Constants = {
       bag_type: ["cabin", "oversized", "fragile", "normal"],
       baggage_status: [
         "checked_in",
+        "screening",
+        "sorting",
         "in_transit",
+        "loaded",
         "arrived",
         "collected",
         "lost",
