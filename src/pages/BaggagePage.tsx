@@ -212,61 +212,98 @@ const BaggagePage = () => {
         </Card>
 
         {/* Step 2: Scanner */}
-        {locked && location && (
+        {locked && location && user && airportCode && (
           <Card className="border-sky-100">
-            <CardHeader className="pb-3">
+            <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0">
               <CardTitle className="text-base font-heading flex items-center gap-2">
                 <ScanLine className="h-4 w-4 text-primary" />
                 Scan Baggage Tag
               </CardTitle>
+              <div className="inline-flex rounded-md border border-border p-0.5 bg-muted/30">
+                <button
+                  type="button"
+                  onClick={() => setMode("single")}
+                  className={`px-3 py-1 text-xs rounded font-medium transition-colors ${
+                    mode === "single"
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Single Scan
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMode("bulk")}
+                  className={`px-3 py-1 text-xs rounded font-medium transition-colors ${
+                    mode === "bulk"
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Bulk Scan
+                </button>
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              <BarcodeScanner
-                active={scannerOn}
-                onToggle={setScannerOn}
-                onDetected={handleScan}
-              />
+              {mode === "single" ? (
+                <>
+                  <BarcodeScanner
+                    active={scannerOn}
+                    onToggle={setScannerOn}
+                    onDetected={handleScan}
+                  />
 
-              <div className="relative flex items-center">
-                <div className="flex-1 border-t border-border" />
-                <span className="px-3 text-xs text-muted-foreground">OR</span>
-                <div className="flex-1 border-t border-border" />
-              </div>
+                  <div className="relative flex items-center">
+                    <div className="flex-1 border-t border-border" />
+                    <span className="px-3 text-xs text-muted-foreground">OR</span>
+                    <div className="flex-1 border-t border-border" />
+                  </div>
 
-              <form onSubmit={handleManualSubmit} className="flex gap-2">
-                <Input
-                  placeholder="Enter tag manually e.g. SKYBAG0001"
-                  value={manualTag}
-                  onChange={(e) => setManualTag(e.target.value.toUpperCase())}
-                  disabled={busy}
-                />
-                <Button type="submit" disabled={busy || !manualTag.trim()}>
-                  {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Submit"}
-                </Button>
-              </form>
+                  <form onSubmit={handleManualSubmit} className="flex gap-2">
+                    <Input
+                      placeholder="Enter tag manually e.g. SKYBAG0001"
+                      value={manualTag}
+                      onChange={(e) => setManualTag(e.target.value.toUpperCase())}
+                      disabled={busy}
+                    />
+                    <Button type="submit" disabled={busy || !manualTag.trim()}>
+                      {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Submit"}
+                    </Button>
+                  </form>
 
-              {feedback && (
-                <Alert
-                  variant={feedback.type === "error" ? "destructive" : "default"}
-                  className={
-                    feedback.type === "success" ? "border-green-200 bg-green-50" : ""
-                  }
-                >
-                  {feedback.type === "success" ? (
-                    <CheckCircle2 className="h-4 w-4 text-green-700" />
-                  ) : (
-                    <AlertCircle className="h-4 w-4" />
+                  {feedback && (
+                    <Alert
+                      variant={feedback.type === "error" ? "destructive" : "default"}
+                      className={
+                        feedback.type === "success" ? "border-green-200 bg-green-50" : ""
+                      }
+                    >
+                      {feedback.type === "success" ? (
+                        <CheckCircle2 className="h-4 w-4 text-green-700" />
+                      ) : (
+                        <AlertCircle className="h-4 w-4" />
+                      )}
+                      <AlertDescription
+                        className={feedback.type === "success" ? "text-green-800" : ""}
+                      >
+                        {feedback.msg}
+                      </AlertDescription>
+                    </Alert>
                   )}
-                  <AlertDescription
-                    className={feedback.type === "success" ? "text-green-800" : ""}
-                  >
-                    {feedback.msg}
-                  </AlertDescription>
-                </Alert>
+                </>
+              ) : (
+                <BulkScanPanel
+                  location={location}
+                  staffAirport={airportCode}
+                  staffUserId={user.id}
+                />
               )}
             </CardContent>
           </Card>
         )}
+
+        {/* Hide single-scan last result while in bulk mode */}
+        {mode === "bulk" && false && lastScan}
 
         {/* Last scan result */}
         {lastScan && (
