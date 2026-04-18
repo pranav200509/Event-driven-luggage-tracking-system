@@ -1,1 +1,4 @@
 project_id = "yzurcdlxgtzbxgkekihy"
+
+[functions.track-pnr]
+verify_jwt = false
