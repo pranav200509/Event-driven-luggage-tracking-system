@@ -38,6 +38,10 @@ const AdminDashboard = () => {
   const [records, setRecords] = useState<PNRRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [routeTypeFilter, setRouteTypeFilter] = useState<string>("all");
+  const [sourceFilter, setSourceFilter] = useState<string>("all");
+  const [destFilter, setDestFilter] = useState<string>("all");
   const [activeTab, setActiveTab] = useState<"pnr" | "staff">("pnr");
 
   // Staff management state
@@ -152,14 +156,35 @@ const AdminDashboard = () => {
 
   const filteredRecords = records.filter((r) => {
     const q = searchQuery.toLowerCase();
-    return (
+    const matchesSearch =
+      !q ||
       r.pnr_code.toLowerCase().includes(q) ||
       r.passenger_name.toLowerCase().includes(q) ||
       r.flight_number.toLowerCase().includes(q) ||
       r.source_airport.toLowerCase().includes(q) ||
-      r.destination_airport.toLowerCase().includes(q)
-    );
+      r.destination_airport.toLowerCase().includes(q);
+
+    const matchesStatus = statusFilter === "all" || r.checkin_status === statusFilter;
+
+    const hops = r.route_path?.length ?? 2;
+    const matchesRouteType =
+      routeTypeFilter === "all" ||
+      (routeTypeFilter === "direct" && hops === 2) ||
+      (routeTypeFilter === "connecting" && hops >= 3);
+
+    const matchesSource = sourceFilter === "all" || r.source_airport === sourceFilter;
+    const matchesDest = destFilter === "all" || r.destination_airport === destFilter;
+
+    return matchesSearch && matchesStatus && matchesRouteType && matchesSource && matchesDest;
   });
+
+  const resetFilters = () => {
+    setSearchQuery("");
+    setStatusFilter("all");
+    setRouteTypeFilter("all");
+    setSourceFilter("all");
+    setDestFilter("all");
+  };
 
   const checkedInCount = records.filter((r) => r.checkin_status === "checked_in").length;
   const pendingCount = records.length - checkedInCount;
@@ -170,6 +195,7 @@ const AdminDashboard = () => {
     { code: "HYD", name: "Hyderabad" },
     { code: "DEL", name: "Delhi" },
     { code: "BOM", name: "Mumbai" },
+    { code: "CCU", name: "Kolkata" },
   ];
 
   return (
@@ -253,11 +279,16 @@ const AdminDashboard = () => {
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h3 className="font-heading font-semibold text-lg">PNR Records</h3>
-                  <p className="text-sm text-muted-foreground">View and manage all passenger name records</p>
+                  <p className="text-sm text-muted-foreground">
+                    Showing {filteredRecords.length} of {records.length} records
+                  </p>
                 </div>
+                <Button variant="outline" size="sm" onClick={resetFilters} className="gap-1.5 font-heading text-xs">
+                  Reset Filters
+                </Button>
               </div>
 
-              <div className="relative mb-4">
+              <div className="relative mb-3">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search by PNR, name, flight, or route..."
@@ -265,6 +296,54 @@ const AdminDashboard = () => {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10"
                 />
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="text-sm">
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Statuses</SelectItem>
+                    <SelectItem value="checked_in">Checked In</SelectItem>
+                    <SelectItem value="not_checked_in">Not Checked In</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Select value={routeTypeFilter} onValueChange={setRouteTypeFilter}>
+                  <SelectTrigger className="text-sm">
+                    <SelectValue placeholder="Route Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Routes</SelectItem>
+                    <SelectItem value="direct">Direct Only</SelectItem>
+                    <SelectItem value="connecting">Connecting Only</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Select value={sourceFilter} onValueChange={setSourceFilter}>
+                  <SelectTrigger className="text-sm">
+                    <SelectValue placeholder="Source Airport" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Sources</SelectItem>
+                    {airports.map((a) => (
+                      <SelectItem key={a.code} value={a.code}>{a.code} — {a.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Select value={destFilter} onValueChange={setDestFilter}>
+                  <SelectTrigger className="text-sm">
+                    <SelectValue placeholder="Destination Airport" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Destinations</SelectItem>
+                    {airports.map((a) => (
+                      <SelectItem key={a.code} value={a.code}>{a.code} — {a.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               {loading ? (
