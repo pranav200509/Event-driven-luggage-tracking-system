@@ -13,6 +13,7 @@ export interface PNRRecord {
   destination_airport: string;
   checkin_status: "not_checked_in" | "checked_in";
   seat_assignment: string | null;
+  route_path: string[] | null;
   created_at: string;
   updated_at: string;
   // Joined fields from airports table
