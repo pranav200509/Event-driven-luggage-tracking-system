@@ -1,4 +1,6 @@
 import type { PNRRecord } from "@/data/pnrDatabase";
+import type { BaggageRecord } from "@/data/baggageDatabase";
+import type { BaggageStatusLog } from "@/data/baggageScan";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import BaggageTracker from "@/components/BaggageTracker";
@@ -20,7 +22,13 @@ const DetailRow = ({ icon: Icon, label, value }: { icon: any; label: string; val
   </div>
 );
 
-const PNRResult = ({ record }: { record: PNRRecord }) => {
+interface PNRResultProps {
+  record: PNRRecord;
+  prefetchedBags?: BaggageRecord[];
+  prefetchedLogs?: BaggageStatusLog[];
+}
+
+const PNRResult = ({ record, prefetchedBags, prefetchedLogs }: PNRResultProps) => {
   const isCheckedIn = record.checkin_status === "checked_in";
 
   return (
@@ -85,7 +93,13 @@ const PNRResult = ({ record }: { record: PNRRecord }) => {
       </div>
 
       {/* Baggage Tracking Timeline (only if checked in) */}
-      {isCheckedIn && <BaggageTracker pnrCode={record.pnr_code} />}
+      {isCheckedIn && (
+        <BaggageTracker
+          pnrCode={record.pnr_code}
+          prefetchedBags={prefetchedBags}
+          prefetchedLogs={prefetchedLogs}
+        />
+      )}
     </div>
   );
 };
