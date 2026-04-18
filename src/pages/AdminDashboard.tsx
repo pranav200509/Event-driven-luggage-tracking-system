@@ -38,6 +38,10 @@ const AdminDashboard = () => {
   const [records, setRecords] = useState<PNRRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [routeTypeFilter, setRouteTypeFilter] = useState<string>("all");
+  const [sourceFilter, setSourceFilter] = useState<string>("all");
+  const [destFilter, setDestFilter] = useState<string>("all");
   const [activeTab, setActiveTab] = useState<"pnr" | "staff">("pnr");
 
   // Staff management state
@@ -152,14 +156,35 @@ const AdminDashboard = () => {
 
   const filteredRecords = records.filter((r) => {
     const q = searchQuery.toLowerCase();
-    return (
+    const matchesSearch =
+      !q ||
       r.pnr_code.toLowerCase().includes(q) ||
       r.passenger_name.toLowerCase().includes(q) ||
       r.flight_number.toLowerCase().includes(q) ||
       r.source_airport.toLowerCase().includes(q) ||
-      r.destination_airport.toLowerCase().includes(q)
-    );
+      r.destination_airport.toLowerCase().includes(q);
+
+    const matchesStatus = statusFilter === "all" || r.checkin_status === statusFilter;
+
+    const hops = r.route_path?.length ?? 2;
+    const matchesRouteType =
+      routeTypeFilter === "all" ||
+      (routeTypeFilter === "direct" && hops === 2) ||
+      (routeTypeFilter === "connecting" && hops >= 3);
+
+    const matchesSource = sourceFilter === "all" || r.source_airport === sourceFilter;
+    const matchesDest = destFilter === "all" || r.destination_airport === destFilter;
+
+    return matchesSearch && matchesStatus && matchesRouteType && matchesSource && matchesDest;
   });
+
+  const resetFilters = () => {
+    setSearchQuery("");
+    setStatusFilter("all");
+    setRouteTypeFilter("all");
+    setSourceFilter("all");
+    setDestFilter("all");
+  };
 
   const checkedInCount = records.filter((r) => r.checkin_status === "checked_in").length;
   const pendingCount = records.length - checkedInCount;
@@ -170,6 +195,7 @@ const AdminDashboard = () => {
     { code: "HYD", name: "Hyderabad" },
     { code: "DEL", name: "Delhi" },
     { code: "BOM", name: "Mumbai" },
+    { code: "CCU", name: "Kolkata" },
   ];
 
   return (
