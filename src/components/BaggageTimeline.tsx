@@ -23,6 +23,8 @@ interface Props {
   tagNumber: string;
   currentStatus: ScanStatus;
   currentAirportCode: string | null;
+  /** Optional prefetched logs (from public edge function). */
+  prefetchedLogs?: BaggageStatusLog[];
 }
 
 interface AirportInfo {
@@ -52,19 +54,21 @@ function formatTimestamp(iso: string): string {
   });
 }
 
-const BaggageTimeline = ({ tagNumber, currentStatus, currentAirportCode }: Props) => {
-  const [logs, setLogs] = useState<BaggageStatusLog[]>([]);
+const BaggageTimeline = ({
+  tagNumber,
+  currentStatus,
+  currentAirportCode,
+  prefetchedLogs,
+}: Props) => {
+  const hasPrefetch = prefetchedLogs !== undefined;
+  const [logs, setLogs] = useState<BaggageStatusLog[]>(prefetchedLogs ?? []);
   const [airports, setAirports] = useState<Record<string, AirportInfo>>({});
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!hasPrefetch);
   const [refreshing, setRefreshing] = useState(false);
 
   const loadData = useCallback(async () => {
     setRefreshing(true);
-    const [logsData, airportsRes] = await Promise.all([
-      getLogsForTag(tagNumber),
-      supabase.from("airports").select("code, name, city"),
-    ]);
-    setLogs(logsData);
+    const airportsRes = await supabase.from("airports").select("code, name, city");
     if (airportsRes.data) {
       const map: Record<string, AirportInfo> = {};
       airportsRes.data.forEach((a) => {
@@ -72,14 +76,22 @@ const BaggageTimeline = ({ tagNumber, currentStatus, currentAirportCode }: Props
       });
       setAirports(map);
     }
+    if (!hasPrefetch) {
+      const logsData = await getLogsForTag(tagNumber);
+      setLogs(logsData);
+    }
     setLoading(false);
     setRefreshing(false);
-  }, [tagNumber]);
+  }, [tagNumber, hasPrefetch]);
 
   useEffect(() => {
-    setLoading(true);
+    if (!hasPrefetch) setLoading(true);
     loadData();
-  }, [loadData]);
+  }, [loadData, hasPrefetch]);
+
+  useEffect(() => {
+    if (hasPrefetch) setLogs(prefetchedLogs ?? []);
+  }, [prefetchedLogs, hasPrefetch]);
 
   const stageLogMap = new Map<ScanStatus, BaggageStatusLog>();
   [...logs].reverse().forEach((log) => {
