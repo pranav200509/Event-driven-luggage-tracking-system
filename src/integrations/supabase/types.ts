@@ -132,6 +132,7 @@ export type Database = {
           mobile_number: string
           passenger_name: string
           pnr_code: string
+          route_path: string[] | null
           seat_assignment: string | null
           source_airport: string
           updated_at: string
@@ -148,6 +149,7 @@ export type Database = {
           mobile_number: string
           passenger_name: string
           pnr_code: string
+          route_path?: string[] | null
           seat_assignment?: string | null
           source_airport: string
           updated_at?: string
@@ -164,6 +166,7 @@ export type Database = {
           mobile_number?: string
           passenger_name?: string
           pnr_code?: string
+          route_path?: string[] | null
           seat_assignment?: string | null
           source_airport?: string
           updated_at?: string
