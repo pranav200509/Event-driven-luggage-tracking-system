@@ -303,10 +303,7 @@ const BaggagePage = () => {
         )}
 
         {/* Hide single-scan last result while in bulk mode */}
-        {mode === "bulk" && false && lastScan}
-
-        {/* Last scan result */}
-        {lastScan && (
+        {mode === "single" && lastScan && (
           <Card className="border-green-200">
             <CardHeader className="pb-3">
               <CardTitle className="text-base font-heading flex items-center gap-2">
