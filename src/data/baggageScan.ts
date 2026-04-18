@@ -204,7 +204,7 @@ export async function performScan(args: {
       airport_code: args.staffAirport,
       location,
       scanned_by: args.staffUserId,
-      method: "single_scan",
+      method: args.method ?? "single_scan",
     })
     .select()
     .single();
