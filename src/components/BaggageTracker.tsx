@@ -4,18 +4,32 @@ import BaggageTimeline from "@/components/BaggageTimeline";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Luggage, Loader2 } from "lucide-react";
-import type { ScanStatus } from "@/data/baggageScan";
+import type { ScanStatus, BaggageStatusLog } from "@/data/baggageScan";
 
 interface Props {
   pnrCode: string;
+  /** Optional prefetched data (used by public Track page via edge function). */
+  prefetchedBags?: BaggageRecord[];
+  prefetchedLogs?: BaggageStatusLog[];
 }
 
-const BaggageTracker = ({ pnrCode }: Props) => {
-  const [bags, setBags] = useState<BaggageRecord[]>([]);
-  const [selectedTag, setSelectedTag] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+const BaggageTracker = ({ pnrCode, prefetchedBags, prefetchedLogs }: Props) => {
+  const hasPrefetch = prefetchedBags !== undefined;
+  const [bags, setBags] = useState<BaggageRecord[]>(prefetchedBags ?? []);
+  const [selectedTag, setSelectedTag] = useState<string | null>(
+    prefetchedBags && prefetchedBags.length > 0 ? prefetchedBags[0].tag_number : null
+  );
+  const [loading, setLoading] = useState(!hasPrefetch);
 
   useEffect(() => {
+    if (hasPrefetch) {
+      setBags(prefetchedBags ?? []);
+      setSelectedTag(
+        prefetchedBags && prefetchedBags.length > 0 ? prefetchedBags[0].tag_number : null
+      );
+      setLoading(false);
+      return;
+    }
     let mounted = true;
     (async () => {
       setLoading(true);
@@ -28,7 +42,7 @@ const BaggageTracker = ({ pnrCode }: Props) => {
     return () => {
       mounted = false;
     };
-  }, [pnrCode]);
+  }, [pnrCode, hasPrefetch, prefetchedBags]);
 
   if (loading) {
     return (
@@ -51,6 +65,7 @@ const BaggageTracker = ({ pnrCode }: Props) => {
   }
 
   const selected = bags.find((b) => b.tag_number === selectedTag) ?? bags[0];
+  const tagLogs = prefetchedLogs?.filter((l) => l.tag_number === selected.tag_number);
 
   return (
     <div className="space-y-4">
@@ -81,6 +96,7 @@ const BaggageTracker = ({ pnrCode }: Props) => {
         tagNumber={selected.tag_number}
         currentStatus={selected.status as ScanStatus}
         currentAirportCode={selected.airport_code ?? selected.current_location}
+        prefetchedLogs={tagLogs}
       />
     </div>
   );

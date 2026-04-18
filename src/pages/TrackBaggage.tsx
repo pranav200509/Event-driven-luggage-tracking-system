@@ -1,25 +1,31 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Plane, Luggage, Search, Loader2 } from "lucide-react";
-import { lookupPNR, type PNRRecord } from "@/data/pnrDatabase";
+import { trackPNR, type PNRRecord } from "@/data/pnrDatabase";
 import PNRResult from "@/components/PNRResult";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import type { BaggageRecord } from "@/data/baggageDatabase";
+import type { BaggageStatusLog } from "@/data/baggageScan";
 
 const TrackBaggage = () => {
   const navigate = useNavigate();
   const [pnr, setPnr] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<PNRRecord | null | undefined>(undefined);
+  const [bags, setBags] = useState<BaggageRecord[]>([]);
+  const [logs, setLogs] = useState<BaggageStatusLog[]>([]);
   const [searchedPnr, setSearchedPnr] = useState("");
 
   const handleSearch = async () => {
     if (!pnr.trim()) return;
     setLoading(true);
     try {
-      const record = await lookupPNR(pnr);
-      setResult(record);
+      const data = await trackPNR(pnr);
+      setResult(data.pnr);
+      setBags((data.bags ?? []) as BaggageRecord[]);
+      setLogs((data.logs ?? []) as BaggageStatusLog[]);
       setSearchedPnr(pnr);
     } finally {
       setLoading(false);
@@ -97,7 +103,7 @@ const TrackBaggage = () => {
         {result !== undefined && (
           <div className="mt-8">
             {result ? (
-              <PNRResult record={result} />
+              <PNRResult record={result} prefetchedBags={bags} prefetchedLogs={logs} />
             ) : (
               <Card className="animate-in fade-in duration-300">
                 <CardContent className="p-10 text-center">

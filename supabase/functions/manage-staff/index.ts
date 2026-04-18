@@ -59,7 +59,8 @@ Deno.serve(async (req) => {
       });
 
       if (createErr) {
-        return new Response(JSON.stringify({ error: createErr.message }), {
+        console.error("create_staff createUser error:", createErr);
+        return new Response(JSON.stringify({ error: "Failed to create user." }), {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
@@ -73,9 +74,10 @@ Deno.serve(async (req) => {
       });
 
       if (roleErr) {
+        console.error("create_staff role assignment error:", roleErr);
         // Clean up user if role assignment fails
         await adminClient.auth.admin.deleteUser(newUser.user.id);
-        return new Response(JSON.stringify({ error: roleErr.message }), {
+        return new Response(JSON.stringify({ error: "Failed to assign role to new user." }), {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
@@ -111,7 +113,8 @@ Deno.serve(async (req) => {
         password: new_password,
       });
       if (error) {
-        return new Response(JSON.stringify({ error: error.message }), {
+        console.error("reset_password error:", error);
+        return new Response(JSON.stringify({ error: "Failed to reset password." }), {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
@@ -164,7 +167,8 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), {
+    console.error("manage-staff unexpected error:", err);
+    return new Response(JSON.stringify({ error: "Internal server error." }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

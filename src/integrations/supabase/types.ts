@@ -260,6 +260,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      has_role_at_airport: {
+        Args: {
+          _airport_code: string
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       next_bag_tag: { Args: never; Returns: string }
     }
     Enums: {

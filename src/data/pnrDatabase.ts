@@ -28,6 +28,11 @@ export interface Airport {
   city: string;
 }
 
+/**
+ * Authenticated staff lookup of a PNR via direct table read.
+ * Public/passenger callers must use `trackPNR()` instead, which goes
+ * through the rate-limited `track-pnr` edge function and excludes PII.
+ */
 export async function lookupPNR(pnr: string): Promise<PNRRecord | null> {
   const { data, error } = await supabase
     .from("pnr_records")
@@ -48,6 +53,24 @@ export async function lookupPNR(pnr: string): Promise<PNRRecord | null> {
     destination_city: (data.destination as any)?.city,
     destination_name: (data.destination as any)?.name,
   } as PNRRecord;
+}
+
+export interface TrackPNRResponse {
+  pnr: PNRRecord | null;
+  bags: any[];
+  logs: any[];
+}
+
+/**
+ * Public passenger lookup. Calls the secure edge function which masks
+ * PII (email/phone) and returns related bags + scan logs in one shot.
+ */
+export async function trackPNR(pnr: string): Promise<TrackPNRResponse> {
+  const { data, error } = await supabase.functions.invoke("track-pnr", {
+    body: { pnr: pnr.trim().toUpperCase() },
+  });
+  if (error || !data) return { pnr: null, bags: [], logs: [] };
+  return data as TrackPNRResponse;
 }
 
 export async function getAllPNRs(): Promise<PNRRecord[]> {
