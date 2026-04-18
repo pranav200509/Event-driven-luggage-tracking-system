@@ -1,6 +1,7 @@
 import type { PNRRecord } from "@/data/pnrDatabase";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import BaggageTracker from "@/components/BaggageTracker";
 import {
   Plane,
   User,
@@ -82,6 +83,9 @@ const PNRResult = ({ record }: { record: PNRRecord }) => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Baggage Tracking Timeline (only if checked in) */}
+      {isCheckedIn && <BaggageTracker pnrCode={record.pnr_code} />}
     </div>
   );
 };

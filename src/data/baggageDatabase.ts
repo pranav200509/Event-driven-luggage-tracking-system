@@ -6,8 +6,9 @@ export interface BaggageRecord {
   pnr_code: string;
   weight: number;
   bag_type: "cabin" | "oversized" | "fragile" | "normal";
-  status: "checked_in" | "in_transit" | "arrived" | "collected" | "lost";
+  status: "checked_in" | "screening" | "sorting" | "in_transit" | "loaded" | "arrived" | "collected" | "lost";
   current_location: string;
+  airport_code: string | null;
   created_at: string;
   updated_at: string;
 }
