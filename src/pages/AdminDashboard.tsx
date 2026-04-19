@@ -330,13 +330,6 @@ const AdminDashboard = () => {
             Activity Logs
           </button>
         </div>
-                ? "border-primary text-foreground"
-                : "border-transparent text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            Staff Management
-          </button>
-        </div>
 
         {/* PNR Tab */}
         {activeTab === "pnr" && (
