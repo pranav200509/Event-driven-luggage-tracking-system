@@ -96,6 +96,7 @@ const BaggageTracker = ({ pnrCode, prefetchedBags, prefetchedLogs }: Props) => {
         tagNumber={selected.tag_number}
         currentStatus={selected.status as ScanStatus}
         currentAirportCode={selected.airport_code ?? selected.current_location}
+        pnrCode={pnrCode}
         prefetchedLogs={tagLogs}
       />
     </div>

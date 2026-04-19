@@ -285,6 +285,9 @@ export type Database = {
         | "arrived"
         | "collected"
         | "lost"
+        | "unloaded"
+        | "transfer_sorting"
+        | "carousel"
       checkin_status: "not_checked_in" | "checked_in"
     }
     CompositeTypes: {
@@ -424,6 +427,9 @@ export const Constants = {
         "arrived",
         "collected",
         "lost",
+        "unloaded",
+        "transfer_sorting",
+        "carousel",
       ],
       checkin_status: ["not_checked_in", "checked_in"],
     },
