@@ -42,7 +42,23 @@ const AdminDashboard = () => {
   const [routeTypeFilter, setRouteTypeFilter] = useState<string>("all");
   const [sourceFilter, setSourceFilter] = useState<string>("all");
   const [destFilter, setDestFilter] = useState<string>("all");
-  const [activeTab, setActiveTab] = useState<"pnr" | "staff">("pnr");
+  const [activeTab, setActiveTab] = useState<"pnr" | "staff" | "logs">("pnr");
+
+  // Activity logs state
+  interface StaffLog {
+    id: string;
+    user_id: string;
+    staff_name: string | null;
+    email: string | null;
+    role: string | null;
+    airport_code: string | null;
+    login_time: string;
+    logout_time: string | null;
+  }
+  const [logs, setLogs] = useState<StaffLog[]>([]);
+  const [logsLoading, setLogsLoading] = useState(false);
+  const [logRoleFilter, setLogRoleFilter] = useState<string>("all");
+  const [logStatusFilter, setLogStatusFilter] = useState<string>("all");
 
   // Staff management state
   const [staffList, setStaffList] = useState<StaffMember[]>([]);
@@ -94,7 +110,40 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     if (activeTab === "staff") loadStaff();
+    if (activeTab === "logs") loadLogs();
   }, [activeTab]);
+
+  const loadLogs = async () => {
+    setLogsLoading(true);
+    const { data, error } = await supabase
+      .from("staff_logs")
+      .select("*")
+      .order("login_time", { ascending: false })
+      .limit(200);
+    if (error) {
+      toast({ title: "Failed to load logs", description: error.message, variant: "destructive" });
+    } else {
+      setLogs((data ?? []) as StaffLog[]);
+    }
+    setLogsLoading(false);
+  };
+
+  const formatDuration = (loginIso: string, logoutIso: string | null) => {
+    const start = new Date(loginIso).getTime();
+    const end = logoutIso ? new Date(logoutIso).getTime() : Date.now();
+    const ms = Math.max(0, end - start);
+    const mins = Math.floor(ms / 60000);
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    return h > 0 ? `${h}h ${m}m` : `${m}m`;
+  };
+
+  const filteredLogs = logs.filter((l) => {
+    if (logRoleFilter !== "all" && l.role !== logRoleFilter) return false;
+    if (logStatusFilter === "active" && l.logout_time !== null) return false;
+    if (logStatusFilter === "logged_out" && l.logout_time === null) return false;
+    return true;
+  });
 
   const handleAddStaff = async () => {
     if (!newEmail || !newPassword || !newFullName) return;
@@ -264,6 +313,23 @@ const AdminDashboard = () => {
             onClick={() => setActiveTab("staff")}
             className={`pb-2 text-sm font-heading font-medium border-b-2 transition-colors ${
               activeTab === "staff"
+                ? "border-primary text-foreground"
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Staff Management
+          </button>
+          <button
+            onClick={() => setActiveTab("logs")}
+            className={`pb-2 text-sm font-heading font-medium border-b-2 transition-colors ${
+              activeTab === "logs"
+                ? "border-primary text-foreground"
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Activity Logs
+          </button>
+        </div>
                 ? "border-primary text-foreground"
                 : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
