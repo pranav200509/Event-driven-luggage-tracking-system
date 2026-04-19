@@ -89,6 +89,13 @@ export function useAuth() {
   }, [fetchRoleAndProfile]);
 
   const signOut = useCallback(async () => {
+    // Record logout BEFORE signing out so we still have an authenticated session
+    try {
+      const { recordLogout } = await import("@/lib/staffLogs");
+      await recordLogout();
+    } catch (err) {
+      console.error("recordLogout failed", err);
+    }
     await supabase.auth.signOut();
   }, []);
 

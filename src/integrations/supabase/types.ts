@@ -212,6 +212,42 @@ export type Database = {
         }
         Relationships: []
       }
+      staff_logs: {
+        Row: {
+          airport_code: string | null
+          created_at: string
+          email: string | null
+          id: string
+          login_time: string
+          logout_time: string | null
+          role: string | null
+          staff_name: string | null
+          user_id: string
+        }
+        Insert: {
+          airport_code?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          login_time?: string
+          logout_time?: string | null
+          role?: string | null
+          staff_name?: string | null
+          user_id: string
+        }
+        Update: {
+          airport_code?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          login_time?: string
+          logout_time?: string | null
+          role?: string | null
+          staff_name?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           airport_code: string

@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth, getRolePath } from "@/hooks/useAuth";
+import { recordLogin } from "@/lib/staffLogs";
 
 const StaffLogin = () => {
   const navigate = useNavigate();
@@ -40,6 +41,9 @@ const StaffLogin = () => {
             : error.message,
           variant: "destructive",
         });
+      } else {
+        // Log the login activity (fire and forget)
+        recordLogin();
       }
       // Redirect is handled by useAuth effect above
     } finally {
