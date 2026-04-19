@@ -277,7 +277,7 @@ export async function performScan(args: {
   }
 
   // 7. Update baggage record
-  const { data: updated, error: updateErr } = await supabase
+  const { data: updatedRows, error: updateErr } = await supabase
     .from("baggage_records")
     .update({
       status: newStatus,
@@ -285,18 +285,26 @@ export async function performScan(args: {
       airport_code: next.airport,
     })
     .eq("tag_number", tag)
-    .select()
-    .single();
+    .select();
 
-  if (updateErr || !updated) {
+  if (updateErr) {
     return {
       success: false,
-      message: updateErr?.message
-        ? `Failed to update bag: ${updateErr.message}`
-        : "Failed to update bag",
+      message: `Failed to update bag: ${updateErr.message}`,
       errorCode: "unknown",
     };
   }
+
+  if (!updatedRows || updatedRows.length === 0) {
+    // RLS blocked the update — staff isn't authorized for the bag's current airport
+    return {
+      success: false,
+      message: `Not authorized to update this bag at ${args.staffAirport}. The bag's current airport (${currentAirport}) doesn't match your assigned airport.`,
+      errorCode: "invalid_airport",
+    };
+  }
+
+  const updated = updatedRows[0];
 
   // 8. Insert log
   const { data: log, error: logErr } = await supabase
