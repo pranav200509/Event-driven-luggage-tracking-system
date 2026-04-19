@@ -296,10 +296,9 @@ export async function performScan(args: {
   }
 
   if (!updatedRows || updatedRows.length === 0) {
-    // RLS blocked the update — staff isn't authorized for the bag's current airport
     return {
       success: false,
-      message: `Not authorized to update this bag at ${args.staffAirport}. The bag's current airport (${currentAirport}) doesn't match your assigned airport.`,
+      message: "You are not authorized to update this bag at this stage",
       errorCode: "invalid_airport",
     };
   }
