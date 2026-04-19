@@ -629,6 +629,89 @@ const AdminDashboard = () => {
             </CardContent>
           </Card>
         )}
+
+        {/* Activity Logs Tab */}
+        {activeTab === "logs" && (
+          <Card className="border-sky-100">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+                <div>
+                  <h2 className="text-lg font-bold font-heading">Staff Activity Logs</h2>
+                  <p className="text-xs text-muted-foreground">Login &amp; logout history (latest 200)</p>
+                </div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Select value={logRoleFilter} onValueChange={setLogRoleFilter}>
+                    <SelectTrigger className="h-9 w-[160px]"><SelectValue placeholder="Role" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Roles</SelectItem>
+                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="checkin_staff">Check-in Staff</SelectItem>
+                      <SelectItem value="baggage_staff">Baggage Staff</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select value={logStatusFilter} onValueChange={setLogStatusFilter}>
+                    <SelectTrigger className="h-9 w-[140px]"><SelectValue placeholder="Status" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="logged_out">Logged Out</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button variant="outline" size="sm" onClick={loadLogs} className="gap-1.5">
+                    <RefreshCw className="h-3.5 w-3.5" /> Refresh
+                  </Button>
+                </div>
+              </div>
+
+              {logsLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                </div>
+              ) : filteredLogs.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">No activity logs found.</p>
+              ) : (
+                <div className="border rounded-md overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Staff Name</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Role</TableHead>
+                        <TableHead>Airport</TableHead>
+                        <TableHead>Login Time</TableHead>
+                        <TableHead>Logout Time</TableHead>
+                        <TableHead>Duration</TableHead>
+                        <TableHead>Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredLogs.map((log) => (
+                        <TableRow key={log.id}>
+                          <TableCell className="font-medium">{log.staff_name ?? "—"}</TableCell>
+                          <TableCell className="text-xs">{log.email ?? "—"}</TableCell>
+                          <TableCell className="text-xs">{log.role ? getRoleLabel(log.role as AppRole) : "—"}</TableCell>
+                          <TableCell className="text-xs">{log.airport_code ?? "—"}</TableCell>
+                          <TableCell className="text-xs">{new Date(log.login_time).toLocaleString()}</TableCell>
+                          <TableCell className="text-xs">
+                            {log.logout_time ? new Date(log.logout_time).toLocaleString() : "—"}
+                          </TableCell>
+                          <TableCell className="text-xs">{formatDuration(log.login_time, log.logout_time)}</TableCell>
+                          <TableCell>
+                            {log.logout_time === null ? (
+                              <Badge className="bg-emerald-500 hover:bg-emerald-500 text-white">Active</Badge>
+                            ) : (
+                              <Badge variant="secondary">Logged Out</Badge>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
       </main>
     </div>
   );
